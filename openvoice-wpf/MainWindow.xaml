@@ -40,7 +40,7 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <TextBlock Style="{DynamicResource MaterialDesignHeadline1TextBlock}" Foreground="#fff" Text="Audio Device:" FontSize="18" VerticalAlignment="Bottom" HorizontalAlignment="Left" Grid.Column="1"/>
-            <ComboBox Style="{DynamicResource MaterialDesignComboBox}" HorizontalAlignment="Left" Background="#fff" Width="256" Height="20" VerticalAlignment="Bottom" Foreground="#000" Grid.Column="2"></ComboBox>
+            <ComboBox Name="audioDeviceCBox" Style="{DynamicResource MaterialDesignComboBox}" HorizontalAlignment="Left" Background="#fff" Width="256" Height="25" VerticalAlignment="Bottom" Foreground="#000" Grid.Column="2" SelectionChanged="audioDevice_onChange"></ComboBox>
         </Grid>
         <Grid Grid.Row="2" Margin="0 10 0 0" Name="connectionListGrid">
             <Grid.ColumnDefinitions>
