@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using InTheHand.Net;
 
 namespace openvoice_wpf
 {
@@ -58,6 +59,18 @@ namespace openvoice_wpf
         {
             AddWifiWindow wifiWindow = new AddWifiWindow();
             wifiWindow.Show();
+        }
+
+        private void createBtConnBtn_Click(object sender, RoutedEventArgs e)
+        {
+            AddBtWindow btWindow = new AddBtWindow();
+            try
+            {
+                btWindow.Show();
+            }
+            catch { 
+                //Meaning the bluetooth error occured in the AddBtWindow. Do nothing, the user is already informed.
+            }
         }
     }
 }

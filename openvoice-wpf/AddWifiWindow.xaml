@@ -10,7 +10,7 @@
         MaxHeight="380"
         MinWidth="601"
         MaxWidth="601"
-        Title="Add Wi-fi Connection." Height="380" Width="601">
+        Title="Add Wi-fi Connection" Height="380" Width="601">
     <Grid>
         <Label x:Name="title" Foreground="#fff" Style="{DynamicResource MaterialDesignLabel}" Content="Add Wi-Fi Connection:" HorizontalAlignment="Center" FontFamily="Segoe UI Light" FontSize="16" Margin="0,22,0,0" VerticalAlignment="Top"/>
         <Label Name="nameLbl" Foreground="#fff" Style="{DynamicResource MaterialDesignLabel}" Content="Name:" HorizontalAlignment="Left" FontFamily="Segoe UI Light" FontSize="16" Margin="138,65,0,0" VerticalAlignment="Top"/>
