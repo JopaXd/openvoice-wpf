@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:openvoice_wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="1200" Background="#FF333333">
+        MinHeight="720"
+        MinWidth="1120"
+        Title="OpenVoice" Height="650" Width="1200" Background="#FF333333">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="80"/>
@@ -25,7 +27,7 @@
                 <RowDefinition Height="60" />
             </Grid.RowDefinitions>
             <TextBlock Style="{DynamicResource MaterialDesignHeadline1TextBlock}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#ffffff" Name="mainTitle" FontSize="22" Grid.Column="0">OpenVoice</TextBlock>
-            <Button Grid.Column="2" Width="130" Content="Add Wifi" Style="{DynamicResource MaterialDesignRaisedButton}"></Button>
+            <Button Grid.Column="2" Width="130" Content="Add Wi-Fi" Style="{DynamicResource MaterialDesignRaisedButton}"></Button>
             <Button Grid.Column="3" Width="130" Content="Add Bluetooth" Style="{DynamicResource MaterialDesignRaisedButton}"></Button>
         </Grid>
         <Grid Grid.Row="1" Margin="0 20 0 0" Name="audioDevicesGrid">
