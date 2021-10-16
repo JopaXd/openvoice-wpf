@@ -5,8 +5,69 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:openvoice_wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="650" Width="1200" Background="#FF333333">
     <Grid>
-
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition />
+            <RowDefinition Height="80"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" VerticalAlignment="Top" Name="menuGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="212"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="58"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60" />
+            </Grid.RowDefinitions>
+            <TextBlock Style="{DynamicResource MaterialDesignHeadline1TextBlock}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#ffffff" Name="mainTitle" FontSize="22" Grid.Column="0">OpenVoice</TextBlock>
+            <Button Grid.Column="2" Width="130" Content="Add Wifi" Style="{DynamicResource MaterialDesignRaisedButton}"></Button>
+            <Button Grid.Column="3" Width="130" Content="Add Bluetooth" Style="{DynamicResource MaterialDesignRaisedButton}"></Button>
+        </Grid>
+        <Grid Grid.Row="1" Margin="0 20 0 0" Name="audioDevicesGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="62"/>
+                <ColumnDefinition Width="115"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TextBlock Style="{DynamicResource MaterialDesignHeadline1TextBlock}" Foreground="#fff" Text="Audio Device:" FontSize="18" VerticalAlignment="Bottom" HorizontalAlignment="Left" Grid.Column="1"/>
+            <ComboBox Style="{DynamicResource MaterialDesignComboBox}" HorizontalAlignment="Left" Background="#fff" Width="256" Height="20" VerticalAlignment="Bottom" Foreground="#000" Grid.Column="2"></ComboBox>
+        </Grid>
+        <Grid Grid.Row="2" Margin="0 10 0 0" Name="connectionListGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="60"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Border Style="{DynamicResource MaterialDesignToolBarMainPanelBorderStyle}" Grid.Column="1" BorderThickness="2" BorderBrush="#666666">
+                <StackPanel Orientation="Vertical">
+                    <!--Connections here-->
+                </StackPanel>
+            </Border>
+        </Grid>
+        <Grid Grid.Row="3" Name="statusGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="63"/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="63"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="1" Style="{DynamicResource MaterialDesignHeadline1TextBlock}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#ffffff" FontSize="22">Status: Not Connected.</TextBlock>
+            <TextBlock Grid.Column="3" Style="{DynamicResource MaterialDesignHeadline1TextBlock}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="#ffffff" FontSize="22">Client Address: Not Connected.</TextBlock>
+        </Grid>
     </Grid>
 </Window>
