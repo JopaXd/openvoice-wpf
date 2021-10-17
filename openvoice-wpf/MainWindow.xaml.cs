@@ -142,6 +142,7 @@ namespace openvoice_wpf
                 forgetBtn.SetValue(Grid.ColumnProperty, 2);
                 forgetBtn.SetResourceReference(ContentControl.ContentProperty, "MaterialDesignRaisedButton");
                 forgetBtn.Content = "Forget";
+                forgetBtn.Click += forgetBtn_Click;
                 connectionGrid.Children.Add(connectBtn);
                 connectionGrid.Children.Add(forgetBtn);
                 connectionGrid.Children.Add(connNameLbl);
@@ -150,6 +151,101 @@ namespace openvoice_wpf
                 connBorder.Child = connectionGrid;
                 connPanel.Children.Add(connBorder);
             }
+        }
+
+        public static T FindChild<T>(DependencyObject parent, string childName)
+   where T : DependencyObject
+        {
+            // Confirm parent and childName are valid. 
+            if (parent == null) return null;
+
+            T foundChild = null;
+
+            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                // If the child is not of the request child type child
+                T childType = child as T;
+                if (childType == null)
+                {
+                    // recursively drill down the tree
+                    foundChild = FindChild<T>(child, childName);
+
+                    // If the child is found, break so we do not overwrite the found child. 
+                    if (foundChild != null) break;
+                }
+                else if (!string.IsNullOrEmpty(childName))
+                {
+                    var frameworkElement = child as FrameworkElement;
+                    // If the child's name is set for search
+                    if (frameworkElement != null && frameworkElement.Name == childName)
+                    {
+                        // if the child's name is of the request name
+                        foundChild = (T)child;
+                        break;
+                    }
+                }
+                else
+                {
+                    // child element found.
+                    foundChild = (T)child;
+                    break;
+                }
+            }
+
+            return foundChild;
+        }
+
+        private void createNewConnection(string type, string name, string addr)
+        {
+            string configPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/open_voice/config.json";
+            JObject connFile = JObject.Parse(File.ReadAllText(configPath));
+            JArray connections = (JArray)connFile["connections"];
+            JObject newConn = new JObject();
+            newConn.Add(new JProperty("type", type));
+            newConn.Add(new JProperty("addr", addr));
+            newConn.Add(new JProperty("name", name));
+            connections.Add(newConn);
+            connFile["connections"] = connections;
+            using (StreamWriter f = File.CreateText(configPath))
+            using (JsonTextWriter writer = new JsonTextWriter(f))
+            {
+                connFile.WriteTo(writer);
+                writer.Close();
+                f.Close();
+            }
+            return;
+        }
+
+        private void forgetBtn_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult forgetPrompt = MessageBox.Show("Are you sure you want to forget this connection?", "Forget Connection", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (forgetPrompt == MessageBoxResult.Yes) {
+                Grid btnParent = (Grid)((Button)sender).Parent;
+                Label addressLbl = FindChild<Label>(btnParent, "connAddr");
+                forgetConnection(addressLbl.Content.ToString());
+                VisualiseConnections();
+            }
+        }
+
+        private void forgetConnection(string address) {
+            JObject connFile = JObject.Parse(File.ReadAllText(configPath));
+            JArray connections = (JArray)connFile["connections"];
+            foreach (JObject conn in connections) {
+                if ((string)conn["addr"] == address) {
+                    connections.Remove(conn);
+                    using (StreamWriter f = File.CreateText(configPath))
+                    using (JsonTextWriter writer = new JsonTextWriter(f))
+                    {
+                        connFile.WriteTo(writer);
+                        writer.Close();
+                        f.Close();
+                    }
+                    break;
+                }
+            }
+            return;
         }
 
         private List<string> getAudioDevices() {
