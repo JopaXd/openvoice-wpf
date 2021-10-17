@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:openvoice_wpf"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
         MinHeight="720"
         MinWidth="1120"
@@ -52,9 +53,10 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Border Style="{DynamicResource MaterialDesignToolBarMainPanelBorderStyle}" Grid.Column="1" BorderThickness="2" BorderBrush="#666666">
-                <StackPanel Orientation="Vertical">
-                    <!--Connections here-->
-                </StackPanel>
+                <ScrollViewer>
+                    <StackPanel Name="connPanel" Orientation="Vertical">
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
         </Grid>
         <Grid Grid.Row="3" Name="statusGrid">
