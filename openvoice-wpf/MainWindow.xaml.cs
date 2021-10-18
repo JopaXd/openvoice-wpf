@@ -186,6 +186,15 @@ namespace openvoice_wpf
             Byte[] sendBytes = Encoding.ASCII.GetBytes(System.Net.Dns.GetHostName());
             udp.Send(sendBytes, sendBytes.Length);
             IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Parse(address), 0);
+            //Connect function does not block until client has connected and tries to read from the socket until it reaches timeout.
+            //This tries to read to make sure the client has actually connected before proceding.
+            try {
+                udp.Receive(ref RemoteIpEndPoint);
+            }
+            catch (SocketException) {
+                MessageBox.Show("Failed to connect to the server!", "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             var bwp = new BufferedWaveProvider(new WaveFormat(16000, 16, 1));
             status = true;
             this.Dispatcher.Invoke(() =>
