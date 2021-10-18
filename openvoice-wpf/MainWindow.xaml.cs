@@ -4,24 +4,18 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using InTheHand.Net;
 using NAudio.Wave;
 using FontAwesome.WPF;
 using System.Threading;
 using System.Text.RegularExpressions;
 using InTheHand.Net.Sockets;
+using System.Net.Sockets;
+using System.Net;
 
 namespace openvoice_wpf
 {
@@ -97,6 +91,10 @@ namespace openvoice_wpf
         }
 
         public void connectBtn_Click(object sender, RoutedEventArgs e) {
+            if (status == true) {
+                MessageBox.Show("You are already connected to a device!", "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             Grid btnParent = (Grid)((Button)sender).Parent;
             Label addressLbl = FindChild<Label>(btnParent, "connAddr");
             string address = addressLbl.Content.ToString();
@@ -155,6 +153,7 @@ namespace openvoice_wpf
                 try
                 {
                     int readLen = peerStream.Read(buf, 0, buf.Length);
+                    //This checks if the client reads nothing, if it does, it lost the connection.
                     if (readLen == 0)
                     {
                         MessageBox.Show("Lost connection to the server!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -162,11 +161,13 @@ namespace openvoice_wpf
                     }
                     bwp.AddSamples(buf, 0, readLen);
                 }
+                //Timeout.
                 catch (IOException) {
                     MessageBox.Show("Lost connection to the server!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                     break;
                 }
             }
+            //We set status here to false so that if the socket loses the connection, we make sure the status is false.
             status = false;
             this.Dispatcher.Invoke(() =>
             {
@@ -179,7 +180,56 @@ namespace openvoice_wpf
 
         public void wifiConnectionThread(string address)
         {
-            //Wifi Logic here.
+            UdpClient udp = new UdpClient(50005);
+            udp.Client.ReceiveTimeout = 5000;
+            udp.Connect(address, 50005);
+            Byte[] sendBytes = Encoding.ASCII.GetBytes(System.Net.Dns.GetHostName());
+            udp.Send(sendBytes, sendBytes.Length);
+            IPEndPoint RemoteIpEndPoint = new IPEndPoint(IPAddress.Parse(address), 0);
+            var bwp = new BufferedWaveProvider(new WaveFormat(16000, 16, 1));
+            status = true;
+            this.Dispatcher.Invoke(() =>
+            {
+                this.statusLbl.Text = "Status: Connected!";
+                this.addrLbl.Text = $"Client Address: {address}";
+                this.disconnectBtn.Visibility = Visibility.Visible;
+            });
+            WaveOutEvent wo = null;
+            for (int n = -1; n < WaveOut.DeviceCount; n++)
+            {
+                var caps = WaveOut.GetCapabilities(n);
+                if (caps.ProductName == getCurrentAudioDevice())
+                {
+                    wo = new WaveOutEvent { DeviceNumber = n };
+                    break;
+                }
+            }
+            wo.Init(bwp);
+            wo.Play();
+            while (status)
+            {
+                try
+                {
+                    Byte[] receiveBytes = udp.Receive(ref RemoteIpEndPoint);
+                    Console.WriteLine($"{receiveBytes.Length}");
+                    bwp.AddSamples(receiveBytes, 0, receiveBytes.Length);
+                }
+                //Timeout
+                catch (SocketException)
+                {
+                    MessageBox.Show("Lost connection to the server!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    break;
+                }
+            }
+            //We set status here to false so that if the socket loses the connection, we make sure the status is false.
+            status = false;
+            this.Dispatcher.Invoke(() =>
+            {
+                this.statusLbl.Text = "Status: Not Connected.";
+                this.addrLbl.Text = "Client Address: Not Connected.";
+                this.disconnectBtn.Visibility = Visibility.Hidden;
+            });
+            udp.Close();
         }
 
         public void VisualiseConnections() {
