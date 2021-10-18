@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         MinHeight="720"
         MinWidth="1120"
-        Title="OpenVoice" Height="650" Width="1200" Background="#FF333333">
+        Title="OpenVoice" Height="650" Width="1200" Background="#FF333333" Closed="mainWindow_Closed">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="80"/>
@@ -70,8 +70,9 @@
             <Grid.RowDefinitions>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Column="1" Style="{DynamicResource MaterialDesignHeadline1TextBlock}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#ffffff" FontSize="22">Status: Not Connected.</TextBlock>
-            <TextBlock Grid.Column="3" Style="{DynamicResource MaterialDesignHeadline1TextBlock}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="#ffffff" FontSize="22">Client Address: Not Connected.</TextBlock>
+            <TextBlock Name="statusLbl" Grid.Column="1" Style="{DynamicResource MaterialDesignHeadline1TextBlock}" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#ffffff" FontSize="22">Status: Not Connected.</TextBlock>
+            <Button Name="disconnectBtn" Visibility="Hidden" Grid.Column="2" Width="130" Content="Disconnect" Style="{DynamicResource MaterialDesignRaisedButton}" Click="disconnectBtn_Click"></Button>
+            <TextBlock Name="addrLbl" Grid.Column="3" Style="{DynamicResource MaterialDesignHeadline1TextBlock}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="#ffffff" FontSize="22">Client Address: Not Connected.</TextBlock>
         </Grid>
     </Grid>
 </Window>

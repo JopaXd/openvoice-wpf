@@ -19,6 +19,9 @@ using System.Windows.Shapes;
 using InTheHand.Net;
 using NAudio.Wave;
 using FontAwesome.WPF;
+using System.Threading;
+using System.Text.RegularExpressions;
+using InTheHand.Net.Sockets;
 
 namespace openvoice_wpf
 {
@@ -30,6 +33,10 @@ namespace openvoice_wpf
         string configPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/open_voice/config.json";
 
         string configDir = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/open_voice/";
+
+        Guid connGuid = new Guid("71019876-227c-4d6f-adea-87d9aa1f7d2c");
+
+        bool status = false;
 
         public MainWindow()
         {
@@ -89,6 +96,92 @@ namespace openvoice_wpf
             return connections;
         }
 
+        public void connectBtn_Click(object sender, RoutedEventArgs e) {
+            Grid btnParent = (Grid)((Button)sender).Parent;
+            Label addressLbl = FindChild<Label>(btnParent, "connAddr");
+            string address = addressLbl.Content.ToString();
+            Regex ipv4Regex = new Regex(@"^(?:25[0-5]|2[0-4]\d|[0-1]?\d{1,2})(?:\.(?:25[0-5]|2[0-4]\d|[0-1]?\d{1,2})){3}$");
+            Thread connThread;
+            if (ipv4Regex.IsMatch(address))
+            {
+                //This is a wifi connection.
+                //A bit odd to determine it, but it works.
+                connThread = new Thread(() => wifiConnectionThread(address));
+            }
+            else {
+                //This is a bluetooth connection.
+                connThread = new Thread(() => btConnectionThread(BluetoothAddress.Parse(address)));
+            }
+            connThread.Start();
+        }
+
+        public void btConnectionThread(BluetoothAddress address)
+        {
+            BluetoothClient client = new BluetoothClient();
+            try
+            {
+                client.Connect(address, connGuid);
+            }
+            catch (Exception e) {
+                MessageBox.Show(e.Message, "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            //Successfully connected.
+            Stream peerStream = client.GetStream();
+            peerStream.ReadTimeout = 5000;
+            byte[] buf = new byte[4096];
+            var bwp = new BufferedWaveProvider(new WaveFormat(16000, 16, 1));
+            status = true;
+            //Determine audio device
+            this.Dispatcher.Invoke(() =>
+            {
+                this.statusLbl.Text = "Status: Connected!";
+                this.addrLbl.Text = $"Client Address: {address.ToString()}";
+                this.disconnectBtn.Visibility = Visibility.Visible;
+            });
+            WaveOutEvent wo = null;
+            for (int n = -1; n < WaveOut.DeviceCount; n++)
+            {
+                var caps = WaveOut.GetCapabilities(n);
+                if (caps.ProductName == getCurrentAudioDevice()) {
+                    wo = new WaveOutEvent { DeviceNumber = n };
+                    break;
+                }
+            }
+            wo.Init(bwp);
+            wo.Play();
+            while (status)
+            {
+                try
+                {
+                    int readLen = peerStream.Read(buf, 0, buf.Length);
+                    if (readLen == 0)
+                    {
+                        MessageBox.Show("Lost connection to the server!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                        break;
+                    }
+                    bwp.AddSamples(buf, 0, readLen);
+                }
+                catch (IOException) {
+                    MessageBox.Show("Lost connection to the server!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    break;
+                }
+            }
+            status = false;
+            this.Dispatcher.Invoke(() =>
+            {
+                this.statusLbl.Text = "Status: Not Connected.";
+                this.addrLbl.Text = "Client Address: Not Connected.";
+                this.disconnectBtn.Visibility = Visibility.Hidden;
+            });
+            client.Close();
+        }
+
+        public void wifiConnectionThread(string address)
+        {
+            //Wifi Logic here.
+        }
+
         public void VisualiseConnections() {
             connPanel.Children.Clear();
             List<List<string>> conns = getConnections();
@@ -138,6 +231,7 @@ namespace openvoice_wpf
                 connectBtn.SetValue(Grid.ColumnProperty, 2);
                 connectBtn.SetResourceReference(ContentControl.ContentProperty, "MaterialDesignRaisedButton");
                 connectBtn.Content = "Connect";
+                connectBtn.Click += connectBtn_Click;
                 Button forgetBtn = new Button() { Margin = new Thickness(0, 50, 0, 0), Name = "connForgetBtn", HorizontalAlignment = HorizontalAlignment.Right, Width = 120 };
                 forgetBtn.SetValue(Grid.ColumnProperty, 2);
                 forgetBtn.SetResourceReference(ContentControl.ContentProperty, "MaterialDesignRaisedButton");
@@ -195,27 +289,6 @@ namespace openvoice_wpf
             }
 
             return foundChild;
-        }
-
-        private void createNewConnection(string type, string name, string addr)
-        {
-            string configPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/open_voice/config.json";
-            JObject connFile = JObject.Parse(File.ReadAllText(configPath));
-            JArray connections = (JArray)connFile["connections"];
-            JObject newConn = new JObject();
-            newConn.Add(new JProperty("type", type));
-            newConn.Add(new JProperty("addr", addr));
-            newConn.Add(new JProperty("name", name));
-            connections.Add(newConn);
-            connFile["connections"] = connections;
-            using (StreamWriter f = File.CreateText(configPath))
-            using (JsonTextWriter writer = new JsonTextWriter(f))
-            {
-                connFile.WriteTo(writer);
-                writer.Close();
-                f.Close();
-            }
-            return;
         }
 
         private void forgetBtn_Click(object sender, RoutedEventArgs e)
@@ -306,6 +379,20 @@ namespace openvoice_wpf
         private void audioDevice_onChange(object sender, SelectionChangedEventArgs e)
         {
             changeAudioDevice(audioDeviceCBox.SelectedItem.ToString());
+        }
+
+        private void disconnectBtn_Click(object sender, RoutedEventArgs e)
+        {
+            status = false;
+            this.addrLbl.Text = "Client Address: Not Connected.";
+            this.statusLbl.Text = "Status: Not Connected.";
+            this.disconnectBtn.Visibility = Visibility.Hidden;
+        }
+
+        private void mainWindow_Closed(object sender, EventArgs e)
+        {
+            //Just make sure none of the threads keep running.
+            status = false;
         }
     }
 }
