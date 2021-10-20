@@ -163,7 +163,11 @@ namespace openvoice_wpf
                 }
                 //Timeout.
                 catch (IOException) {
-                    MessageBox.Show("Lost connection to the server!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (status != false)
+                    {
+                        //Just a check to make sure that this does not pop up even when the user hits the disconnect button.
+                        MessageBox.Show("Lost connection to the server!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
                     break;
                 }
             }
@@ -232,7 +236,10 @@ namespace openvoice_wpf
                 //Timeout
                 catch (SocketException)
                 {
-                    MessageBox.Show("Lost connection to the server!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (status != false) {
+                        //Just a check to make sure that this does not pop up even when the user hits the disconnect button.
+                        MessageBox.Show("Lost connection to the server!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
                     break;
                 }
             }
