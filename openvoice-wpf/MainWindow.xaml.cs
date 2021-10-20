@@ -193,6 +193,7 @@ namespace openvoice_wpf
             }
             catch (SocketException) {
                 MessageBox.Show("Failed to connect to the server!", "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+                udp.Close();
                 return;
             }
             var bwp = new BufferedWaveProvider(new WaveFormat(16000, 16, 1));
@@ -215,12 +216,17 @@ namespace openvoice_wpf
             }
             wo.Init(bwp);
             wo.Play();
-            while (status)
+            while (true)
             {
+                if (status == false) {
+                    //Send the server the "dc" keyword that lets the server know the client has disconnected.
+                    Byte[] sendDc = Encoding.ASCII.GetBytes("dc");
+                    udp.Send(sendDc, sendDc.Length);
+                    break;
+                }
                 try
                 {
                     Byte[] receiveBytes = udp.Receive(ref RemoteIpEndPoint);
-                    Console.WriteLine($"{receiveBytes.Length}");
                     bwp.AddSamples(receiveBytes, 0, receiveBytes.Length);
                 }
                 //Timeout
