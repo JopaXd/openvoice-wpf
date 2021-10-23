@@ -172,7 +172,11 @@ namespace openvoice_wpf
                     break;
                 }
             }
-            //We set status here to false so that if the socket loses the connection, we make sure the status is false.
+            disconnect();
+            client.Close();
+        }
+
+        public void disconnect() {
             status = false;
             try
             {
@@ -183,12 +187,11 @@ namespace openvoice_wpf
                     this.disconnectBtn.Visibility = Visibility.Hidden;
                 });
             }
-            catch (TaskCanceledException e) {
+            catch (TaskCanceledException e)
+            {
                 //Do nothing.
                 //This error occures when the window closes and the client is still connected.
             }
-
-            client.Close();
         }
 
         public void wifiConnectionThread(string address)
@@ -262,21 +265,7 @@ namespace openvoice_wpf
                     break;
                 }
             }
-            //We set status here to false so that if the socket loses the connection, we make sure the status is false.
-            status = false;
-            try
-            {
-                this.Dispatcher.Invoke(() =>
-                {
-                    this.statusLbl.Text = "Status: Not Connected.";
-                    this.addrLbl.Text = "Client Address: Not Connected.";
-                    this.disconnectBtn.Visibility = Visibility.Hidden;
-                });
-            }
-            catch (TaskCanceledException e) { 
-                //Do nothing.
-                //This error occures when the window closes and the client is still connected.
-            }
+            disconnect();
             udp.Close();
         }
 
@@ -481,16 +470,13 @@ namespace openvoice_wpf
 
         private void disconnectBtn_Click(object sender, RoutedEventArgs e)
         {
-            status = false;
-            this.addrLbl.Text = "Client Address: Not Connected.";
-            this.statusLbl.Text = "Status: Not Connected.";
-            this.disconnectBtn.Visibility = Visibility.Hidden;
+            disconnect();
         }
 
         private void mainWindow_Closed(object sender, EventArgs e)
         {
             //Just make sure none of the threads keep running.
-            status = false;
+            disconnect();
         }
     }
 }
