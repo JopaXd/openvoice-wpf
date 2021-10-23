@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using InTheHand.Net.Sockets;
 using System.Net.Sockets;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace openvoice_wpf
 {
@@ -173,18 +174,36 @@ namespace openvoice_wpf
             }
             //We set status here to false so that if the socket loses the connection, we make sure the status is false.
             status = false;
-            this.Dispatcher.Invoke(() =>
+            try
             {
-                this.statusLbl.Text = "Status: Not Connected.";
-                this.addrLbl.Text = "Client Address: Not Connected.";
-                this.disconnectBtn.Visibility = Visibility.Hidden;
-            });
+                this.Dispatcher.Invoke(() =>
+                {
+                    this.statusLbl.Text = "Status: Not Connected.";
+                    this.addrLbl.Text = "Client Address: Not Connected.";
+                    this.disconnectBtn.Visibility = Visibility.Hidden;
+                });
+            }
+            catch (TaskCanceledException e) {
+                //Do nothing.
+                //This error occures when the window closes and the client is still connected.
+            }
+
             client.Close();
         }
 
         public void wifiConnectionThread(string address)
         {
-            UdpClient udp = new UdpClient(50005);
+            UdpClient udp = null;
+            try
+            {
+                udp = new UdpClient(50005);
+            }
+            catch (SocketException e) {
+                //Do nothing.
+                //Usually occurs when the user clicks the connect button multiple times.
+                return;
+                
+            }
             udp.Client.ReceiveTimeout = 5000;
             udp.Connect(address, 50005);
             Byte[] sendBytes = Encoding.ASCII.GetBytes(System.Net.Dns.GetHostName());
@@ -245,12 +264,19 @@ namespace openvoice_wpf
             }
             //We set status here to false so that if the socket loses the connection, we make sure the status is false.
             status = false;
-            this.Dispatcher.Invoke(() =>
+            try
             {
-                this.statusLbl.Text = "Status: Not Connected.";
-                this.addrLbl.Text = "Client Address: Not Connected.";
-                this.disconnectBtn.Visibility = Visibility.Hidden;
-            });
+                this.Dispatcher.Invoke(() =>
+                {
+                    this.statusLbl.Text = "Status: Not Connected.";
+                    this.addrLbl.Text = "Client Address: Not Connected.";
+                    this.disconnectBtn.Visibility = Visibility.Hidden;
+                });
+            }
+            catch (TaskCanceledException e) { 
+                //Do nothing.
+                //This error occures when the window closes and the client is still connected.
+            }
             udp.Close();
         }
 
