@@ -121,8 +121,8 @@ namespace openvoice_wpf
             {
                 client.Connect(address, connGuid);
             }
-            catch (Exception e) {
-                MessageBox.Show(e.Message, "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
+            catch (Exception) {
+                MessageBox.Show("Failed to connect to device!", "Error!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             //Successfully connected.
